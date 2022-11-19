@@ -120,4 +120,23 @@ export class InvoiceService {
     Object.assign(newInvoice, createInvoiceDto)
     return await this.invoiceRepository.save(newInvoice)
   }
+
+  /**
+   * It deletes an invoice by its id.
+   * @param {number} invoiceId - number - the id of the invoice to be deleted
+   * @returns The return type is a Promise&lt;DeleteResult&gt;.
+   */
+  async deleteInvoice(invoiceId: number) {
+    const invoice = await this.invoiceRepository.findOne({
+      where: {
+        id: invoiceId,
+      },
+    })
+
+    if (!invoice) {
+      throw new HttpException('Invoice is not exist', HttpStatus.NOT_FOUND)
+    }
+
+    return await this.invoiceRepository.delete({ id: invoiceId })
+  }
 }

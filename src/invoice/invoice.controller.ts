@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Patch, Post, Query, UseGuards } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Patch, Post, Query, UseGuards } from '@nestjs/common'
 
 import { AtGuard } from 'auth/guards'
 import { CreateInvoiceDto, DraftInvoiceDto } from './dto'
@@ -38,5 +38,11 @@ export class InvoiceController {
   @Patch('paid')
   async markInvoiceAsPaid(@Body('id') invoiceId: number) {
     return await this.invoiceService.markInvoiceAsPaid(invoiceId)
+  }
+
+  @UseGuards(AtGuard)
+  @Delete()
+  async deleteInvoice(@Body('id') invoiceId: number) {
+    return await this.invoiceService.deleteInvoice(invoiceId)
   }
 }
