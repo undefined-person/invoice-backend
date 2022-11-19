@@ -41,21 +41,21 @@ export class InvoiceService {
   }
 
   /**
-   * It creates a new invoice with the status of pending
-   * @param {CreateInvoiceDto} createInvoiceDto - CreateInvoiceDto - This is the DTO that we created
-   * earlier.
+   * This function creates a new invoice with the status of pending.
+   * @param {CreateInvoiceDto} createInvoiceDto - CreateInvoiceDto
+   * @returns The return type is InvoiceEntity.
    */
-  async createNewInvoice(createInvoiceDto: CreateInvoiceDto): Promise<void> {
-    await this.createInvoice(createInvoiceDto, IInvoiceStatus.PENDING)
+  async createNewInvoice(createInvoiceDto: CreateInvoiceDto): Promise<InvoiceEntity> {
+    return await this.createInvoice(createInvoiceDto, IInvoiceStatus.PENDING)
   }
 
   /**
-   * It creates an invoice with the status of draft
-   * @param {DraftInvoiceDto} draftInvoiceDto - This is the data that we're going to pass to the
-   * createInvoice method.
+   * This function takes a DraftInvoiceDto and returns an InvoiceEntity
+   * @param {DraftInvoiceDto} draftInvoiceDto - DraftInvoiceDto
+   * @returns The return type is a Promise of an InvoiceEntity.
    */
-  async addDraftInvoice(draftInvoiceDto: DraftInvoiceDto): Promise<void> {
-    await this.createInvoice(draftInvoiceDto, IInvoiceStatus.DRAFT)
+  async addDraftInvoice(draftInvoiceDto: DraftInvoiceDto): Promise<InvoiceEntity> {
+    return await this.createInvoice(draftInvoiceDto, IInvoiceStatus.DRAFT)
   }
 
   /**
