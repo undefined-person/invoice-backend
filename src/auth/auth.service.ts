@@ -2,11 +2,11 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { IsNull, Not, Repository } from 'typeorm'
 import { JwtService } from '@nestjs/jwt'
+import { hash, verify } from 'argon2'
 
 import { CreateUserDto, LoginUserDto } from './dto/'
 import { UserEntity } from './auth.entity'
 import { IUserWithTokensResponse, Tokens } from './types'
-import { hash, verify } from 'argon2'
 import { AT_AGE, RT_AGE } from './constants'
 
 @Injectable()
@@ -17,11 +17,21 @@ export class AuthService {
   ) {}
 
   /**
-   * It creates a new user
-   * @param {CreateUserDto} createUserDto - This is the DTO that we created earlier.
-   * @returns The user object is being returned.
+   * It creates a new user, generates JWT tokens, and returns the user and tokens
+   * @param {CreateUserDto} createUserDto - CreateUserDto
+   * @returns {
+   *     user: {
+   *       id: '1',
+   *       email: 'test@test.com',
+   *       username: 'test',
+   *     },
+   *     tokens: {
+   *       accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJp',
+   *       refreshToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJp'
+   *     }
+   * }
    */
-  async signUp(createUserDto: CreateUserDto): Promise<UserEntity> {
+  async signUp(createUserDto: CreateUserDto): Promise<IUserWithTokensResponse> {
     const userByEmail = await this.userRepository.findOne({
       where: {
         email: createUserDto.email,
@@ -38,10 +48,20 @@ export class AuthService {
       throw new HttpException('Email or username is already taken', HttpStatus.UNPROCESSABLE_ENTITY)
     }
 
-    const user = new UserEntity()
-    Object.assign(user, createUserDto)
+    const newUser = new UserEntity()
 
-    return await this.userRepository.save(user)
+    Object.assign(newUser, createUserDto)
+
+    const user = await this.userRepository.save(newUser)
+
+    const tokens = await this.generateJWT(user.id, user.email)
+
+    await this.updateRtHash(user.id, tokens.refreshToken)
+
+    delete user.password
+    delete user.hashedRt
+
+    return { user, tokens }
   }
 
   /**
@@ -57,6 +77,8 @@ export class AuthService {
    *     tokens: {
    *       accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJp',
    *       refreshToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJp'
+   *     }
+   * }
    */
   async signIn({ email, password }: LoginUserDto): Promise<IUserWithTokensResponse> {
     const user = await this.userRepository.findOne({

@@ -15,8 +15,15 @@ export class AuthController {
 
   @Public()
   @Post('signup')
-  async signup(@Body() createUserDto: CreateUserDto) {
-    await this.authService.signUp(createUserDto)
+  async signup(@Body() createUserDto: CreateUserDto, @Res({ passthrough: true }) res: Response) {
+    const { user, tokens } = await this.authService.signUp(createUserDto)
+
+    res.cookie('refreshToken', tokens.refreshToken, {
+      maxAge: REFRESH_COOKIE_AGE,
+      httpOnly: true,
+    })
+
+    return { user, accessToken: tokens.accessToken }
   }
 
   @Public()
@@ -35,7 +42,6 @@ export class AuthController {
   @UseGuards(AtGuard)
   @Post('logout')
   async logout(@User('id') userId: number, @Res({ passthrough: true }) res: Response) {
-    console.log('userId', userId)
     await this.authService.logout(userId)
     res.clearCookie('refreshToken')
   }
