@@ -1,5 +1,6 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm'
 
+import { UserEntity } from 'auth/auth.entity'
 import { IInvoiceClient, IInvoiceItem, IInvoiceStatus } from './types'
 
 @Entity('invoice')
@@ -42,4 +43,7 @@ export class InvoiceEntity {
 
   @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
   total: number
+
+  @ManyToOne(() => UserEntity, (user) => user.invoices, { eager: true })
+  owner: UserEntity
 }

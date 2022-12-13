@@ -218,4 +218,12 @@ export class AuthService {
 
     return await this.userRepository.save(user)
   }
+
+  async getUserById(userId: number): Promise<UserEntity> {
+    return this.userRepository.findOne({
+      where: {
+        id: userId,
+      },
+    })
+  }
 }
