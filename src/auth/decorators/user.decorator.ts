@@ -3,7 +3,13 @@ import { createParamDecorator, ExecutionContext } from '@nestjs/common'
 export const User = createParamDecorator((data: any, ctx: ExecutionContext) => {
   const req = ctx.switchToHttp().getRequest()
 
-  if (!data) return req.user
+  if (!req.user) {
+    return null
+  }
 
-  return req.user[data]
+  if (data) {
+    return req.user[data]
+  }
+
+  return req.user
 })

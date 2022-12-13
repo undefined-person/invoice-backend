@@ -1,6 +1,7 @@
 import { hash } from 'argon2'
-import { BeforeInsert, Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
+import { BeforeInsert, Column, Entity, PrimaryGeneratedColumn, OneToMany } from 'typeorm'
 
+import { InvoiceEntity } from 'invoice/invoice.entity'
 @Entity('users')
 export class UserEntity {
   @PrimaryGeneratedColumn()
@@ -17,6 +18,9 @@ export class UserEntity {
 
   @Column({ nullable: true, default: null })
   hashedRt: string
+
+  @OneToMany(() => InvoiceEntity, (invoice) => invoice.owner)
+  invoices: Array<InvoiceEntity>
 
   @BeforeInsert()
   async hashPassword() {
