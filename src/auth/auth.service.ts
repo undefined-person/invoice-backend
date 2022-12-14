@@ -224,6 +224,7 @@ export class AuthService {
       where: {
         id: userId,
       },
+      select: ['id', 'email', 'username'],
     })
   }
 }
