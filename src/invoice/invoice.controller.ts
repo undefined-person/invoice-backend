@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Patch, Post, Query, UseGuards } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common'
 
 import { AtGuard } from 'auth/guards'
 import { CreateInvoiceDto, DraftInvoiceDto } from './dto'
@@ -16,6 +16,12 @@ export class InvoiceController {
   @Get()
   async getInvoices(@User('id') currentUserId: number, @Query() query: IInvoicesQuery) {
     return await this.invoiceService.getInvoices(query, currentUserId)
+  }
+
+  @UseGuards(AtGuard)
+  @Get(':invoiceId')
+  async getInvoice(@User('id') currentUserId: number, @Param('invoiceId') invoiceId: number) {
+    return await this.invoiceService.getInvoice(invoiceId, currentUserId)
   }
 
   @UseGuards(AtGuard)
