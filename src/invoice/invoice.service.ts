@@ -35,7 +35,10 @@ export class InvoiceService {
    * @returns An array of Invoice entities and the total count of Invoice entities.
    */
   async getInvoices(query: IInvoicesQuery, currentUserId: number): Promise<IInvoicesResponse> {
-    const queryBuilder = this.invoiceRepository.createQueryBuilder('invoices').where('invoices.ownerId = :id', { id: currentUserId })
+    const queryBuilder = this.invoiceRepository
+      .createQueryBuilder('invoices')
+      .select(['invoices.id', 'invoices.orderId', 'invoices.paymentDue', 'invoices.clientName', 'invoices.total', 'invoices.status'])
+      .where('invoices.ownerId = :id', { id: currentUserId })
 
     if (query.status?.length > 0) {
       queryBuilder.andWhere('invoices.status IN (:...status)', { status: query.status })
@@ -55,6 +58,30 @@ export class InvoiceService {
       data,
       count,
     }
+  }
+
+  /**
+   * "Get an invoice by its id."
+   * @param {number} invoiceId - number - the id of the invoice we want to get
+   * @param {number} currentUserId - number - this is the id of the user who is currently logged in.
+   * @returns The invoice object
+   */
+  async getInvoice(invoiceId: number, currentUserId: number) {
+    const invoice = await this.invoiceRepository.findOne({
+      where: {
+        id: invoiceId,
+      },
+    })
+
+    if (!invoice) {
+      throw new HttpException('Invoice is not exist', HttpStatus.NOT_FOUND)
+    }
+
+    if (invoice.owner.id !== currentUserId) {
+      throw new HttpException('You are not an owner of invoice', HttpStatus.FORBIDDEN)
+    }
+
+    return invoice
   }
 
   /**
