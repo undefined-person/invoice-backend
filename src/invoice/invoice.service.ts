@@ -1,3 +1,4 @@
+import { dateFormatter } from './../utils/dateFormatter'
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
@@ -35,27 +36,37 @@ export class InvoiceService {
    * @returns An array of Invoice entities and the total count of Invoice entities.
    */
   async getInvoices(query: IInvoicesQuery, currentUserId: number): Promise<IInvoicesResponse> {
+    const { status, offset, limit } = query
     const queryBuilder = this.invoiceRepository
       .createQueryBuilder('invoices')
       .select(['invoices.id', 'invoices.orderId', 'invoices.paymentDue', 'invoices.clientName', 'invoices.total', 'invoices.status'])
       .where('invoices.ownerId = :id', { id: currentUserId })
 
-    if (query.status?.length > 0) {
-      queryBuilder.andWhere('invoices.status IN (:...status)', { status: query.status })
+    if (status) {
+      queryBuilder.andWhere('invoices.status IN (:...status)', {
+        status: status.trim().split(',').filter(Boolean),
+      })
     }
 
-    if (query.limit) {
+    if (limit) {
       queryBuilder.limit(query.limit)
     }
 
-    if (query.offset) {
+    if (offset) {
       queryBuilder.offset(query.offset)
     }
 
     const [data, count] = await queryBuilder.getManyAndCount()
 
+    const formattedData = data.map((invoice) => {
+      return {
+        ...invoice,
+        paymentDue: dateFormatter(invoice.paymentDue),
+      }
+    })
+
     return {
-      data,
+      data: formattedData,
       count,
     }
   }
@@ -66,10 +77,10 @@ export class InvoiceService {
    * @param {number} currentUserId - number - this is the id of the user who is currently logged in.
    * @returns The invoice object
    */
-  async getInvoice(invoiceId: number, currentUserId: number) {
+  async getInvoice(invoiceId: string, currentUserId: number) {
     const invoice = await this.invoiceRepository.findOne({
       where: {
-        id: invoiceId,
+        orderId: invoiceId,
       },
     })
 

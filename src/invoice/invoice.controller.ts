@@ -20,7 +20,7 @@ export class InvoiceController {
 
   @UseGuards(AtGuard)
   @Get(':invoiceId')
-  async getInvoice(@User('id') currentUserId: number, @Param('invoiceId') invoiceId: number) {
+  async getInvoice(@User('id') currentUserId: number, @Param('invoiceId') invoiceId: string) {
     return await this.invoiceService.getInvoice(invoiceId, currentUserId)
   }
 
@@ -43,14 +43,14 @@ export class InvoiceController {
   }
 
   @UseGuards(AtGuard)
-  @Patch('paid')
-  async markInvoiceAsPaid(@User('id') currentUserId: number, @Body('id') invoiceId: number) {
+  @Patch('paid/:invoiceId')
+  async markInvoiceAsPaid(@User('id') currentUserId: number, @Param('invoiceId') invoiceId: number) {
     return await this.invoiceService.markInvoiceAsPaid(invoiceId, currentUserId)
   }
 
   @UseGuards(AtGuard)
-  @Delete()
-  async deleteInvoice(@User('id') currentUserId: number, @Body('id') invoiceId: number) {
+  @Delete(':invoiceId')
+  async deleteInvoice(@User('id') currentUserId: number, @Param('invoiceId') invoiceId: number) {
     return await this.invoiceService.deleteInvoice(invoiceId, currentUserId)
   }
 }

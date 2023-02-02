@@ -1,5 +1,5 @@
 export interface IInvoicesQuery {
-  status: Array<string>
+  status: string
   limit: number
   offset: number
 }
